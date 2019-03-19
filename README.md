@@ -1,2 +1,3 @@
-# discuz.github.io
+# discuz
+
 Learning Discuz
