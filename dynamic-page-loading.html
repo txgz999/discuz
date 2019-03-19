@@ -39,7 +39,7 @@ xmp { white-space: pre-wrap; display: block;  border: 1px solid lightgrey; paddi
 <!--{/if}--></xmp>
 代码中的xld和bbda是什么意思呢？检查一下记录列表页里的html元素结构不难发现，每个记录（包含它下面的所有回复）是一个具有bbda类名的元素，而所有这些元素都包含在一个具有xld类名的元素里。所以这句代码的意思就是在得到下一页的内容后，从中取出所有具有bbda类名的元素，把它们添加到具有xld类名的元素内容里。这也就是说从下一页的内容里取出所有的记录，加到当前的记录列表的尾部。<br>
 <br>
-<p><a href="data/attachment/album/201903/04/230057qrgrs70toeo9lg9a.png" target="_blank"><img src="data/attachment/album/201903/04/230057qrgrs70toeo9lg9a.png"></a></p><br>
+<p><a href="dynamic-page-loading-1.png" target="_blank"><img src="dynamic-page-loading-1.png"></a></p><br>
 $theurl 在调用这个模板文件的脚本文件里定义，它就是记录列表页的路径里不带页数的部分，而{{#}}是这个函数使用的一个代表页数的特殊记号。所以上述代码的path部分的意思是说在记录列表页的路径里不带页数的部分后添加&amp;page=1的话就是第一页的路径，同样第二页的路径是类似的不过结尾部分是&amp;page=2, 依此类推可以得到所以页数的路径。我们需要告诉这个函数所有分页的路径，它才可以帮我们在需要时自动获取。
 <br><br>
 另外history赋值为false的话，在添页时不改变浏览器网页路径条里的内容；而如果这个值为true的话，浏览器网页路径条就会显示当前获取的最新一页的路径。
