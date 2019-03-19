@@ -2,10 +2,65 @@
 <html>
 <body>
 <h1>给网页添加自动添页功能</h1>
-<p>Discuz网站里的很多网页因为内容过多无法一次性显示，所以需要分页显示。
-    在这样的网页上有个翻页按钮组合供用户翻页。但在手机里更常见的是当用户浏览到一页的尾部时，
-    下一页的内容会自动添加到浏览器里，如在手机和iPad上看新浪博客就是这样。
-    本文介绍下利用一个叫infinite scroll的函数库（链接），
-    我们可以给Discuz网页加上自动添页功能。 </p>
+
+
+Discuz网站里的很多网页因为内容过多无法一次性显示，所以需要分页显示。在这样的网页上有个翻页按钮组合供用户翻页。但在手机里更常见的是当用户浏览到一页的尾部时，下一页的内容会自动添加到浏览器里，如在手机和iPad上看新浪博客就是这样。本文介绍下利用一个叫infinite scroll的函数库（<a href="https://infinite-scroll.com/" target="_blank">链接</a>），我们可以给Discuz网页加上自动添页功能。
+<br><br>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css" rel="stylesheet" type="text/css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js"></script>
+<style>
+xmp { white-space: pre-wrap; display: block;  border: 1px solid lightgrey; padding: 5px;}
+</style>
+
+首先要引入这个函数文件，在文件 template/default/common/header_common.htm的尾部加上
+<xmp class="prettyprint"><script src="https://unpkg.com/infinite-scroll@3/dist/infinite-scroll.pkgd.min.js"></script></xmp>
+这里我们直接使用内容分发网络(CDN)里的这个文件，也可以将它下载到服务器里使用。
+<br><br>
+接下来要改翻页按钮组合，这是一个由 source/class/helper_page.php 里的函数multi提供的功能，在很多个模板文件里都是按类似于下面的方式使用的：
+<xmp class="prettyprint"><!--{if $multi}--><div class="pgs cl mtm">$multi</div><!--{/if}--></xmp>
+我们可以修改这个函数来给所有需要翻页的网页添加自动添页功能，也可以修改单个模板文件来给单个网页添加自动添页功能。本文考虑后者，它的好处是只需要修改模板文件，而且不影响其它网页。
+<br><br>
+<b>１）记录列表页的自动添页</b><br>
+修改模板文件 template/default/home/space_doing.htm，首先删掉翻页按钮组：
+<xmp class="prettyprint"><div class="pgs cl mtm">$multi</div></xmp>
+然后在结尾一句
+<xmp class="prettyprint"><!--{template common/footer}--></xmp>
+前加入
+<xmp class="prettyprint"><!--{if $multi}-->
+<script type="text/javascript">
+        var elem = document.querySelector('.xld');
+        var infScroll = new InfiniteScroll(elem, {
+            path: '$theurl&page={{#}}',
+            append: '.bbda',
+            history: false,
+        });
+</script>
+<!--{/if}--></xmp>
+代码中的xld和bbda是什么意思呢？检查一下记录列表页里的html元素结构不难发现，每个记录（包含它下面的所有回复）是一个具有bbda类名的元素，而所有这些元素都包含在一个具有xld类名的元素里。所以这句代码的意思就是在得到下一页的内容后，从中取出所有具有bbda类名的元素，把它们添加到具有xld类名的元素内容里。这也就是说从下一页的内容里取出所有的记录，加到当前的记录列表的尾部。<br>
+<br>
+<p><a href="data/attachment/album/201903/04/230057qrgrs70toeo9lg9a.png" target="_blank"><img src="data/attachment/album/201903/04/230057qrgrs70toeo9lg9a.png"></a></p><br>
+$theurl 在调用这个模板文件的脚本文件里定义，它就是记录列表页的路径里不带页数的部分，而{{#}}是这个函数使用的一个代表页数的特殊记号。所以上述代码的path部分的意思是说在记录列表页的路径里不带页数的部分后添加&amp;page=1的话就是第一页的路径，同样第二页的路径是类似的不过结尾部分是&amp;page=2, 依此类推可以得到所以页数的路径。我们需要告诉这个函数所有分页的路径，它才可以帮我们在需要时自动获取。
+<br><br>
+另外history赋值为false的话，在添页时不改变浏览器网页路径条里的内容；而如果这个值为true的话，浏览器网页路径条就会显示当前获取的最新一页的路径。
+<br><br>
+<b>２）日志列表页的自动添页</b><br>
+和上面的做法完全相同，修改模板文件 template/default/home/space_blog_list.htm，首先删掉翻页按钮组，然后在结尾一句前加入同样的一段话。
+<br><br>
+<b>３）日志页上评论的自动添页</b><br>
+和上面的做法类似，修改模板文件 template/default/home/space_blog_view.htm，首先删掉翻页按钮组，
+<xmp class="prettyprint"><div class="pgs cl mbm">$multi</div></xmp>
+然后在结尾一句前加入
+<xmp class="prettyprint"><!--{if $multi }-->
+<script type="text/javascript">
+        var elem = document.querySelector('.xld');
+        var infScroll = new InfiniteScroll(elem, {
+            path: 'home.php?mod=space&uid=$blog[uid]&do=$do&id=$id&page={{#}}#comment',
+            append: '.bbda',
+            history: false,
+        });
+</script>
+<!--{/if}--></xmp>
+<br>
 </body>
 </html>
